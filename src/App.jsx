@@ -6,7 +6,7 @@ import StatViewer from './components/StatViewer'
 import './App.css'
 
 export default function App() {
-  const [apiKey, setApiKey] = useState('')
+  const [apiKey, setApiKey] = useState(import.meta.env.VITE_ECOS_API_KEY || '')
   const [selectedStat, setSelectedStat] = useState(null)
 
   return (

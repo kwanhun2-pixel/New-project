@@ -7,7 +7,7 @@
  */
 
 const BASE_URL = '/api/ecos'
-const DEFAULT_KEY = 'sample' // 실제 사용시 발급받은 키로 교체
+const DEFAULT_KEY = import.meta.env.VITE_ECOS_API_KEY || 'sample'
 
 function buildUrl(service, apiKey, params) {
   const key = apiKey || DEFAULT_KEY
