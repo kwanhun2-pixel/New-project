@@ -86,6 +86,43 @@ export async function getKeyStats(apiKey) {
 }
 
 /**
+ * M0/M1/M2 통화량 조회 (최근 월 기준)
+ * @param {string} apiKey
+ */
+export async function getMoneySupply(apiKey) {
+  const now = new Date()
+  // 최신 데이터 확보를 위해 14개월 전부터 현재까지 조회 후 최신 값 추출
+  const endYear = now.getFullYear()
+  const startYear = endYear - 1
+  const endMonth = String(now.getMonth() + 1).padStart(2, '0')
+  const startDate = `${startYear}01`
+  const endDate = `${endYear}${endMonth}`
+
+  const queries = [
+    { label: '본원통화(M0)', statCode: '101Y004', itemCode1: 'BBKA00' },
+    { label: '협의통화(M1)', statCode: '101Y002', itemCode1: 'BBJA00' },
+    { label: '광의통화(M2)', statCode: '101Y003', itemCode1: 'BBJA00' },
+  ]
+
+  const results = await Promise.all(
+    queries.map(async ({ label, statCode, itemCode1 }) => {
+      try {
+        const { rows } = await getStatData(
+          { statCode, cycle: 'M', startDate, endDate, itemCode1 },
+          apiKey
+        )
+        const latest = rows[rows.length - 1]
+        return latest ? { label, value: latest.DATA_VALUE, time: latest.TIME, unit: latest.UNIT_NAME } : null
+      } catch {
+        return null
+      }
+    })
+  )
+
+  return results.filter(Boolean)
+}
+
+/**
  * 통계 용어 검색
  * @param {string} keyword
  * @param {string} apiKey

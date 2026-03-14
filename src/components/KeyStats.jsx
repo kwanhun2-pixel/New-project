@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react'
-import { getKeyStats } from '../api/ecos'
+import { getKeyStats, getMoneySupply } from '../api/ecos'
 
 export default function KeyStats({ apiKey }) {
   const [stats, setStats] = useState([])
+  const [moneySupply, setMoneySupply] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     setLoading(true)
     setError(null)
-    getKeyStats(apiKey)
-      .then(setStats)
+    Promise.all([getKeyStats(apiKey), getMoneySupply(apiKey)])
+      .then(([s, m]) => {
+        setStats(s)
+        setMoneySupply(m)
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }, [apiKey])
@@ -35,6 +39,24 @@ export default function KeyStats({ apiKey }) {
           </div>
         ))}
       </div>
+
+      {moneySupply.length > 0 && (
+        <>
+          <h3 className="section-subtitle">통화량</h3>
+          <div className="key-stats-grid">
+            {moneySupply.map((item, i) => (
+              <div key={i} className="kstat-card kstat-money">
+                <div className="kstat-name">{item.label}</div>
+                <div className="kstat-value">
+                  {Number(item.value).toLocaleString()}
+                  <span className="kstat-unit">{item.unit}</span>
+                </div>
+                <div className="kstat-date">{item.time} 기준</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </section>
   )
 }

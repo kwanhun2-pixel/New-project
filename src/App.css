@@ -114,6 +114,13 @@
   border-bottom: 2px solid var(--color-border);
 }
 
+.section-subtitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-secondary);
+  margin: 20px 0 12px;
+}
+
 /* ===== Buttons ===== */
 .btn-primary {
   background: var(--color-secondary);
@@ -191,6 +198,11 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   padding: 14px 16px;
+}
+
+.kstat-money {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-color: #86efac;
 }
 
 .kstat-name {
