@@ -12,7 +12,22 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }));
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:4173'
+].filter(Boolean) as string[];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.some(o => origin.startsWith(o))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
