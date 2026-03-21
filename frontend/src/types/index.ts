@@ -11,6 +11,10 @@ export interface User {
   location?: string;
   website?: string;
   createdAt: string;
+  experiences?: Experience[];
+  educations?: Education[];
+  skills?: Skill[];
+  projects?: Project[];
   _count?: {
     connectionsFrom: number;
     posts: number;
