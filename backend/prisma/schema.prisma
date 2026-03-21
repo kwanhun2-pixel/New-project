@@ -1,0 +1,256 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  password    String
+  name        String
+  headline    String?
+  bio         String?
+  avatarUrl   String?
+  university  String?
+  major       String?
+  graduationYear Int?
+  location    String?
+  website     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  experiences   Experience[]
+  educations    Education[]
+  skills        UserSkill[]
+  projects      Project[]
+  posts         Post[]
+  comments      Comment[]
+  likes         Like[]
+  connectionsFrom Connection[] @relation("ConnectionFrom")
+  connectionsTo   Connection[] @relation("ConnectionTo")
+  jobApplications JobApplication[]
+  notifications   Notification[] @relation("NotificationTarget")
+  notificationsSent Notification[] @relation("NotificationActor")
+
+  @@map("users")
+}
+
+model Experience {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company     String
+  position    String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  isCurrent   Boolean  @default(false)
+  location    String?
+  createdAt   DateTime @default(now())
+
+  @@map("experiences")
+}
+
+model Education {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school      String
+  degree      String?
+  field       String?
+  startYear   Int
+  endYear     Int?
+  isCurrent   Boolean  @default(false)
+  gpa         Float?
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@map("educations")
+}
+
+model Skill {
+  id        String      @id @default(uuid())
+  name      String      @unique
+  category  String?
+  users     UserSkill[]
+
+  @@map("skills")
+}
+
+model UserSkill {
+  userId    String
+  skillId   String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill     Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  level     SkillLevel @default(BEGINNER)
+
+  @@id([userId, skillId])
+  @@map("user_skills")
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  techStack   String[]
+  githubUrl   String?
+  demoUrl     String?
+  imageUrl    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isCurrent   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@map("projects")
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  imageUrl  String?
+  tags      String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comments  Comment[]
+  likes     Like[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+
+  @@map("comments")
+}
+
+model Like {
+  postId    String
+  userId    String
+  post      Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([postId, userId])
+  @@map("likes")
+}
+
+model Connection {
+  fromUserId String
+  toUserId   String
+  fromUser   User   @relation("ConnectionFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser     User   @relation("ConnectionTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  status     ConnectionStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@id([fromUserId, toUserId])
+  @@map("connections")
+}
+
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Job {
+  id           String   @id @default(uuid())
+  title        String
+  company      String
+  location     String?
+  description  String
+  requirements String[]
+  salary       String?
+  type         JobType  @default(INTERNSHIP)
+  isRemote     Boolean  @default(false)
+  tags         String[]
+  applyUrl     String?
+  deadline     DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  applications JobApplication[]
+
+  @@map("jobs")
+}
+
+enum JobType {
+  INTERNSHIP
+  PART_TIME
+  FULL_TIME
+  CONTRACT
+  VOLUNTEER
+}
+
+model JobApplication {
+  id        String   @id @default(uuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    ApplicationStatus @default(APPLIED)
+  coverLetter String?
+  resumeUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([jobId, userId])
+  @@map("job_applications")
+}
+
+enum ApplicationStatus {
+  APPLIED
+  REVIEWING
+  INTERVIEW
+  OFFERED
+  REJECTED
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  targetId  String
+  target    User     @relation("NotificationTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  actorId   String?
+  actor     User?    @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  type      NotificationType
+  message   String
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  CONNECTION_REQUEST
+  CONNECTION_ACCEPTED
+  POST_LIKE
+  POST_COMMENT
+  JOB_APPLICATION_STATUS
+  MENTION
+}
