@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
@@ -18,8 +18,8 @@ const allowedOrigins = [
   'http://localhost:4173'
 ].filter(Boolean) as string[];
 
-app.use(cors({
-  origin: (origin, callback) => {
+const corsOptions: Parameters<typeof cors>[0] = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     if (!origin || allowedOrigins.some(o => origin.startsWith(o))) {
       callback(null, true);
     } else {
@@ -27,7 +27,8 @@ app.use(cors({
     }
   },
   credentials: true
-}));
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes
@@ -37,10 +38,10 @@ app.use('/api/posts', postRoutes);
 app.use('/api/jobs', jobRoutes);
 
 // Health check
-app.get('/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+app.get('/health', (_req: Request, res: Response) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 // 404
-app.use((_req, res) => res.status(404).json({ success: false, error: '경로를 찾을 수 없습니다' }));
+app.use((_req: Request, res: Response) => res.status(404).json({ success: false, error: '경로를 찾을 수 없습니다' }));
 
 const start = async () => {
   try {
