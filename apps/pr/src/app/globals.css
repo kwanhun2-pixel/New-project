@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #070B14;
+  --bg2: #0D1420;
+  --surface: #161E2E;
+  --border: rgba(255, 255, 255, 0.06);
+  --text: #E8EDF5;
+  --muted: #6B7A99;
+  --p3: #10B981;
+  --p3l: #6EE7B7;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
