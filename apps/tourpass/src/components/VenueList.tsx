@@ -123,12 +123,13 @@ function VenueCard({ venue }: { venue: Venue }) {
         </span>
       </div>
 
-      <button
-        className="w-full mt-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all opacity-0 group-hover:opacity-100"
+      <a
+        href={`/venues/${venue.id}`}
+        className="block w-full mt-4 py-2.5 rounded-xl text-sm font-semibold text-center transition-all opacity-0 group-hover:opacity-100"
         style={{ background: `linear-gradient(135deg, ${colors.text}22, ${colors.text}44)`, border: `1px solid ${colors.border}`, color: colors.text }}
       >
         입장권 구매 →
-      </button>
+      </a>
     </div>
   );
 }
