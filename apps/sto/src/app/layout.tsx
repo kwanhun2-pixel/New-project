@@ -18,11 +18,11 @@ export default function RootLayout({
     <html lang="ko">
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="bg-bg text-[#E8EDF5] font-sans antialiased">
+      <body className="bg-[#F7F8FA] text-[#191919] font-sans antialiased">
         <Navbar />
         {children}
       </body>

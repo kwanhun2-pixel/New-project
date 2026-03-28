@@ -13,34 +13,27 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 h-16"
-      style={{
-        background: "rgba(7,11,20,.88)",
-        backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,.06)",
-      }}
-    >
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#E8EAED] h-14 flex items-center justify-between px-5">
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-3 no-underline">
+      <Link href="/" className="flex items-center gap-2 no-underline">
         <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-base"
-          style={{ background: "linear-gradient(135deg,#7C3AED,#0EA5E9)" }}
+          className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-[#191919] text-sm"
+          style={{ background: "#FFE400" }}
         >
           L8
         </div>
-        <span className="font-bold text-white text-lg leading-none">
-          Loop8 <span className="text-p0l font-light">STO</span>
+        <span className="font-bold text-[#191919] text-base leading-none">
+          Loop8 <span className="text-[#888888] font-normal text-sm">STO</span>
         </span>
       </Link>
 
       {/* Desktop links */}
-      <div className="hidden md:flex items-center gap-8">
+      <div className="hidden md:flex items-center gap-6">
         {links.map((l) => (
           <Link
             key={l.href}
             href={l.href}
-            className="text-muted text-sm hover:text-white transition-colors no-underline"
+            className="text-[#555555] text-sm hover:text-[#191919] transition-colors no-underline font-medium"
           >
             {l.label}
           </Link>
@@ -50,15 +43,15 @@ export function Navbar() {
       {/* CTA */}
       <Link
         href="/kyc"
-        className="hidden md:inline-flex px-5 py-2 rounded-lg text-sm font-bold text-white transition-all hover:-translate-y-0.5"
-        style={{ background: "linear-gradient(135deg,#7C3AED,#0EA5E9)" }}
+        className="hidden md:inline-flex px-4 py-2 rounded-lg text-sm font-bold text-[#191919] transition-all hover:brightness-95"
+        style={{ background: "#FFE400" }}
       >
         투자 시작
       </Link>
 
       {/* Mobile menu toggle */}
       <button
-        className="md:hidden text-muted hover:text-white text-xl"
+        className="md:hidden text-[#555555] text-xl"
         onClick={() => setOpen(!open)}
         aria-label="메뉴"
       >
@@ -67,20 +60,25 @@ export function Navbar() {
 
       {/* Mobile dropdown */}
       {open && (
-        <div
-          className="absolute top-16 left-0 right-0 flex flex-col gap-1 p-4"
-          style={{ background: "rgba(7,11,20,.97)", borderBottom: "1px solid rgba(255,255,255,.06)" }}
-        >
+        <div className="absolute top-14 left-0 right-0 bg-white border-b border-[#E8EAED] flex flex-col p-3 gap-1">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="py-3 px-4 rounded-xl text-muted hover:text-white hover:bg-surface transition-colors no-underline text-sm"
+              className="py-3 px-4 rounded-xl text-[#555555] hover:text-[#191919] hover:bg-[#F7F8FA] transition-colors no-underline text-sm font-medium"
               onClick={() => setOpen(false)}
             >
               {l.label}
             </Link>
           ))}
+          <Link
+            href="/kyc"
+            className="mt-2 py-3 px-4 rounded-xl text-center font-bold text-[#191919] text-sm"
+            style={{ background: "#FFE400" }}
+            onClick={() => setOpen(false)}
+          >
+            투자 시작
+          </Link>
         </div>
       )}
     </nav>
