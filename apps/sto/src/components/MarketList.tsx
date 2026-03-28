@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 interface STOItem {
   id: string;
   title: string;
@@ -8,10 +10,14 @@ interface STOItem {
   venue: string;
   totalAmount: number;
   raisedAmount: number;
-  minInvestment: number;
+  pricePerToken: number;
+  priceChange: number;
   expectedReturn: number;
   deadline: string;
   status: "active" | "upcoming" | "closed";
+  categoryLabel: string;
+  gradient: string;
+  emoji: string;
 }
 
 const MOCK_ITEMS: STOItem[] = [
@@ -23,10 +29,14 @@ const MOCK_ITEMS: STOItem[] = [
     venue: "LG아트센터 서울",
     totalAmount: 500_000_000,
     raisedAmount: 312_000_000,
-    minInvestment: 10_000,
+    pricePerToken: 10_000,
+    priceChange: 2.4,
     expectedReturn: 18,
     deadline: "2024-03-31",
     status: "active",
+    categoryLabel: "수익형 공연",
+    gradient: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+    emoji: "🎭",
   },
   {
     id: "exhibition-monet-2024",
@@ -36,10 +46,14 @@ const MOCK_ITEMS: STOItem[] = [
     venue: "국립현대미술관 서울",
     totalAmount: 800_000_000,
     raisedAmount: 128_000_000,
-    minInvestment: 10_000,
+    pricePerToken: 10_000,
+    priceChange: 1.2,
     expectedReturn: 12,
     deadline: "2024-04-15",
     status: "active",
+    categoryLabel: "대체 보유자산",
+    gradient: "linear-gradient(135deg, #2d1b69 0%, #11998e 100%)",
+    emoji: "🖼️",
   },
   {
     id: "concert-jazz-festival",
@@ -49,10 +63,14 @@ const MOCK_ITEMS: STOItem[] = [
     venue: "올림픽공원 88잔디마당",
     totalAmount: 1_200_000_000,
     raisedAmount: 0,
-    minInvestment: 50_000,
+    pricePerToken: 50_000,
+    priceChange: 0,
     expectedReturn: 15,
     deadline: "2024-05-01",
     status: "upcoming",
+    categoryLabel: "안전 자산",
+    gradient: "linear-gradient(135deg, #0f3460 0%, #533483 100%)",
+    emoji: "🎺",
   },
   {
     id: "ballet-swan-lake",
@@ -62,17 +80,25 @@ const MOCK_ITEMS: STOItem[] = [
     venue: "국립극장 해오름극장",
     totalAmount: 300_000_000,
     raisedAmount: 300_000_000,
-    minInvestment: 10_000,
+    pricePerToken: 10_000,
+    priceChange: -0.8,
     expectedReturn: 10,
     deadline: "2024-02-28",
     status: "closed",
+    categoryLabel: "수익형 공연",
+    gradient: "linear-gradient(135deg, #1a1a2e 0%, #c94b4b 100%)",
+    emoji: "🩰",
   },
 ];
 
-const statusConfig = {
-  active: { label: "청약 중", bg: "#E8F5F1", color: "#00B386" },
-  upcoming: { label: "예정", bg: "#EBF3FF", color: "#1A73E8" },
-  closed: { label: "종료", bg: "#F5F5F5", color: "#999999" },
+const GENRES = ["전체", "뮤지컬", "전시", "콘서트", "발레"];
+
+const GENRE_ICONS: Record<string, string> = {
+  전체: "",
+  뮤지컬: "🎭",
+  전시: "🖼️",
+  콘서트: "🎺",
+  발레: "🩰",
 };
 
 interface MarketListProps {
@@ -80,114 +106,138 @@ interface MarketListProps {
 }
 
 export function MarketList({ showAll = false }: MarketListProps) {
-  const items = showAll ? MOCK_ITEMS : MOCK_ITEMS.filter((i) => i.status !== "closed").slice(0, 3);
+  const [selectedGenre, setSelectedGenre] = useState("전체");
+
+  const filtered = MOCK_ITEMS.filter((item) => {
+    if (!showAll && item.status === "closed") return false;
+    if (selectedGenre !== "전체" && item.genre !== selectedGenre) return false;
+    return true;
+  }).slice(0, showAll ? undefined : 3);
 
   return (
-    <section className="px-5 py-16 max-w-6xl mx-auto">
-      {!showAll && (
-        <>
-          <div className="text-[#888888] text-xs font-medium tracking-widest mb-3 uppercase">STO MARKETS</div>
-          <h2 className="text-3xl font-black text-[#191919] leading-tight mb-2">청약 목록</h2>
-          <p className="text-[#666666] text-base mb-10">진행 중인 공연·전시 수익권 투자 상품입니다.</p>
-        </>
-      )}
+    <section className="px-4 py-6 max-w-2xl mx-auto">
+      {/* Section header */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-black text-[#191919]">탐색</h2>
+        {!showAll && (
+          <a href="/markets" className="text-sm text-[#888888] hover:text-[#191919] transition-colors">
+            전체보기
+          </a>
+        )}
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {items.map((item) => (
-          <STOCard key={item.id} item={item} />
+      {/* Filter chips */}
+      <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+        {GENRES.map((genre) => (
+          <button
+            key={genre}
+            onClick={() => setSelectedGenre(genre)}
+            className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all"
+            style={{
+              background: selectedGenre === genre ? "#191919" : "#FFFFFF",
+              color: selectedGenre === genre ? "#FFFFFF" : "#555555",
+              border: selectedGenre === genre ? "none" : "1px solid #E8EAED",
+            }}
+          >
+            {GENRE_ICONS[genre] && <span>{GENRE_ICONS[genre]}</span>}
+            {genre}
+          </button>
         ))}
       </div>
 
-      {!showAll && (
-        <div className="text-center mt-8">
-          <a
-            href="/markets"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold border border-[#E8EAED] bg-white text-[#555555] hover:bg-[#F7F8FA] transition-all"
-          >
-            전체 청약 목록 보기 →
-          </a>
-        </div>
-      )}
+      {/* Cards */}
+      <div className="flex flex-col gap-4">
+        {filtered.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="text-5xl mb-4">📦</div>
+            <div className="font-bold text-[#191919] text-base mb-1">해당 장르의 상품이 없습니다</div>
+            <div className="text-[#888888] text-sm">다른 장르를 선택해보세요</div>
+          </div>
+        ) : (
+          filtered.map((item) => <STOCard key={item.id} item={item} />)
+        )}
+      </div>
     </section>
   );
 }
 
 function STOCard({ item }: { item: STOItem }) {
   const progress = item.totalAmount > 0 ? (item.raisedAmount / item.totalAmount) * 100 : 0;
-  const cfg = statusConfig[item.status];
+  const isPositive = item.priceChange >= 0;
 
   return (
-    <div className="bg-white border border-[#E8EAED] rounded-2xl overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
-      {/* Top accent */}
-      <div className="h-1" style={{ background: item.status === "active" ? "#FFE400" : item.status === "upcoming" ? "#1A73E8" : "#CCCCCC" }} />
-
-      <div className="p-5">
-        {/* Genre + Status */}
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-medium text-[#888888] bg-[#F7F8FA] px-2 py-1 rounded-md">{item.genre}</span>
-          <span
-            className="text-xs px-2.5 py-1 rounded-full font-medium"
-            style={{ background: cfg.bg, color: cfg.color }}
-          >
-            {cfg.label}
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
+      {/* Image area */}
+      <div className="relative h-44 flex items-center justify-center" style={{ background: item.gradient }}>
+        <span className="text-6xl opacity-40">{item.emoji}</span>
+        <div className="absolute top-3 left-3">
+          <span className="bg-black/60 text-white text-xs px-2.5 py-1 rounded-full font-medium backdrop-blur-sm">
+            {item.categoryLabel}
           </span>
         </div>
+        {item.status === "upcoming" && (
+          <div className="absolute top-3 right-3">
+            <span className="bg-[#1A73E8]/80 text-white text-xs px-2.5 py-1 rounded-full font-medium">예정</span>
+          </div>
+        )}
+        {item.status === "closed" && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <span className="text-white font-bold text-sm">청약 종료</span>
+          </div>
+        )}
+      </div>
 
-        <h3 className="text-base font-bold text-[#191919] mb-1 leading-snug">{item.title}</h3>
-        <p className="text-[#888888] text-xs mb-1">📍 {item.venue}</p>
-        <p className="text-[#666666] text-xs leading-relaxed mb-5 line-clamp-2">{item.description}</p>
+      {/* Info area */}
+      <div className="p-4">
+        <div className="text-xs text-[#888888] mb-1">{item.genre}</div>
+        <div className="font-bold text-[#191919] text-base mb-3 leading-snug">{item.title}</div>
 
         {/* Progress */}
-        <div className="mb-4">
-          <div className="flex justify-between text-xs mb-1.5">
-            <span className="text-[#888888]">모금 진행률</span>
-            <span className="font-bold text-[#191919]">{progress.toFixed(1)}%</span>
-          </div>
-          <div className="h-2 rounded-full bg-[#F0F0F0]">
+        <div className="mb-3">
+          <div className="h-1 rounded-full bg-[#F2F3F5] mb-1">
             <div
-              className="h-full rounded-full transition-all"
+              className="h-full rounded-full"
               style={{
                 width: `${Math.min(progress, 100)}%`,
                 background: item.status === "active" ? "#FFE400" : item.status === "upcoming" ? "#1A73E8" : "#CCCCCC",
               }}
             />
           </div>
-          <div className="flex justify-between text-xs mt-1.5 text-[#888888]">
-            <span>₩{(item.raisedAmount / 100_000_000).toFixed(1)}억 모금</span>
-            <span>목표 ₩{(item.totalAmount / 100_000_000).toFixed(0)}억</span>
-          </div>
+          <div className="text-xs text-[#888888]">모금률 {progress.toFixed(1)}%</div>
         </div>
 
-        {/* Key info */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <div className="bg-[#F7F8FA] rounded-xl p-3 text-center">
-            <div className="text-xs text-[#888888] mb-0.5">최소 투자</div>
-            <div className="text-sm font-bold text-[#191919]">
-              ₩{item.minInvestment.toLocaleString()}
+        <div className="border-t border-[#F2F3F5] pt-3 flex items-end justify-between">
+          <div>
+            <div className="text-xs text-[#888888] mb-0.5">1조각 단가</div>
+            <div className="font-bold text-[#191919] text-sm flex items-center gap-1.5">
+              {item.pricePerToken.toLocaleString()}원
+              {item.priceChange !== 0 && (
+                <span className="text-xs font-medium" style={{ color: isPositive ? "#FF3B30" : "#1A73E8" }}>
+                  {isPositive ? "+" : ""}{item.priceChange}%
+                </span>
+              )}
             </div>
           </div>
-          <div className="bg-[#F0FBF7] rounded-xl p-3 text-center">
-            <div className="text-xs text-[#888888] mb-0.5">예상 수익률</div>
-            <div className="text-sm font-bold text-[#00B386]">
-              +{item.expectedReturn}%
+          <div className="text-right">
+            <div className="text-xs text-[#888888] mb-0.5">예상 연 수익률</div>
+            <div className="font-bold text-sm" style={{ color: "#FF3B30" }}>
+              {item.expectedReturn}%
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Deadline */}
-        <div className="text-xs text-[#888888] mb-4">
-          📅 청약 마감: {item.deadline}
-        </div>
-
+      {/* CTA */}
+      <div className="px-4 pb-4">
         <button
           disabled={item.status !== "active"}
           className="w-full py-3 rounded-xl text-sm font-bold transition-all hover:brightness-95 disabled:opacity-40 disabled:cursor-not-allowed"
           style={{
-            background: item.status === "active" ? "#FFE400" : "#F0F0F0",
-            color: item.status === "active" ? "#191919" : "#999999",
+            background: item.status === "active" ? "#FFE400" : "#F2F3F5",
+            color: item.status === "active" ? "#191919" : "#888888",
           }}
         >
-          {item.status === "active" ? "청약 참여하기" : item.status === "upcoming" ? "사전 알림 신청" : "청약 종료"}
+          {item.status === "active" ? "구매하기" : item.status === "upcoming" ? "사전 알림 신청" : "청약 종료"}
         </button>
       </div>
     </div>
