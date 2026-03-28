@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npx turbo run build --filter=@loop8/sto",
+  "outputDirectory": "apps/sto/.next",
+  "installCommand": "npm install",
+  "framework": "nextjs"
+}
